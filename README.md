@@ -1,10 +1,4 @@
-## Using Keras and Deep Deterministic Policy Gradient to play TORCS
-
-300 lines of python code to demonstrate DDPG with Keras
-
-Please read the following blog for details
-
-https://yanpanlau.github.io/2016/10/11/Torcs-Keras.html
+## Using Keras and Deep Deterministic Policy Gradient to play TORCS for overtaking maneuvers
 
 ![](fast.gif)
 
@@ -18,8 +12,8 @@ https://yanpanlau.github.io/2016/10/11/Torcs-Keras.html
 # How to Run?
 
 ```
-git clone https://github.com/yanpanlau/DDPG-Keras-Torcs.git
-cd DDPG-Keras-Torcs
+git clone https://github.com/WetRavioli22/rl_project.git
+cd rl_project
 cp *.* ~/gym_torcs
 cd ~/gym_torcs
 python ddpg.py 
