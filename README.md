@@ -1,4 +1,4 @@
-## Using Keras and Deep Deterministic Policy Gradient to play TORCS for overtaking maneuvers
+## Using Deep Deterministic Policy Gradient to play TORCS for overtaking maneuvers
 
 ![](fast.gif)
 
