@@ -17,28 +17,28 @@ from CriticNetwork import CriticNetwork
 from OU import OU
 import timeit
 
-OU = OU()       #Ornstein-Uhlenbeck Process
+OU = OU()       #Ornstein-Uhlenbeck Process for exploration
 
-def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
+def playGame(train_indicator=1):    #1 means Train, 0 means Run without training
     BUFFER_SIZE = 100000
     BATCH_SIZE = 32
     GAMMA = 0.99
     TAU = 0.001     #Target Network HyperParameters
     LRA = 0.0001    #Learning rate for Actor
-    LRC = 0.001     #Lerning rate for Critic
+    LRC = 0.001     #Learning rate for Critic
 
-    action_dim = 3  #Steering/Acceleration/Brake
-    state_dim = 65  #of sensors input
+    action_dim = 3  #Steering,Acceleration,Brake
+    state_dim = 65  #Numberof sensors input
 
     np.random.seed(1337)
 
     vision = False
 
-    EXPLORE = 100000.
-    episode_count = 1000
-    max_steps = 100000
+    EXPLORE = 100000.      #Epsilon is reduced by EXPLORE every time step
+    episode_count = 1000 
+    max_steps = 100000     #Max steps in an episode
     reward = 0
-    done = False
+    done = False           #Termination condition
     step = 0
     epsilon = 1
     indicator = 0
@@ -49,8 +49,9 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
     sess = tf.Session(config=config)
     from keras import backend as K
     K.set_session(sess)
-
+    #Create actor network
     actor = ActorNetwork(sess, state_dim, action_dim, BATCH_SIZE, TAU, LRA)
+    #Create critic Network
     critic = CriticNetwork(sess, state_dim, action_dim, BATCH_SIZE, TAU, LRC)
     buff = ReplayBuffer(BUFFER_SIZE)    #Create replay buffer
 
@@ -69,7 +70,9 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
         print("Cannot find the weight")
 
     print("TORCS Experiment Start.")
+    #Save reward history at the end of each episode
     total_reward_history = []
+
     for i in range(episode_count):
 
         print(("Episode : " + str(i) + " Replay Buffer " + str(buff.count())))
@@ -78,7 +81,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
             ob = env.reset(relaunch=True)   #relaunch TORCS every 3 episode because of the memory leak error
         else:
             ob = env.reset()
-
+        #Get states of the previous time step
         s_t = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY,  ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm,ob.opponents))
      
         total_reward = 0.
@@ -103,7 +106,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
             a_t[0][2] = a_t_original[0][2] + noise_t[0][2]
 
             ob, r_t, done, info = env.step(a_t[0])
-
+            #Get states of current time step
             s_t1 = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY, ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm, ob.opponents))
         
             buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
@@ -140,7 +143,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
             print(("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss))
 
             step += 1
-
+            #Relaunch torcs once lap is finished
             if (r_t != -1000) and (r_t != -500) and (np.array_equal(s_t,s_c)):
                 done = True
 
@@ -148,6 +151,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
                 break
 
         if np.mod(i, 3) == 0:
+            #Update weights if train_indicator is enabled, every three timesteps
             if (train_indicator):
                 print("Now we save model")
                 actor.model.save_weights("actormodel.h5", overwrite=True)
@@ -158,9 +162,10 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
                 with open("criticmodel.json", "w") as outfile:
                     json.dump(critic.model.to_json(), outfile)
 
+        #Display rewards and save to csv
         print(("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward)))
         total_reward_history.append(total_reward)
-        pd.DataFrame(total_reward_history).to_csv("Reward_History_overtake_9cars.csv")
+        pd.DataFrame(total_reward_history).to_csv("RewardHistoryImprovementOvertake4Cars.csv")
         print(("Total Step: " + str(step)))
         print("")
 

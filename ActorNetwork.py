@@ -9,9 +9,9 @@ from keras.optimizers import Adam
 import tensorflow as tf
 import keras.backend as K
 
-HIDDEN1_UNITS = 300
-HIDDEN2_UNITS = 600
-
+HIDDEN1_UNITS = 300    #Neurons in layer 1
+HIDDEN2_UNITS = 600    #Neurons in layer 2
+#Class for creating actor network
 class ActorNetwork(object):
     def __init__(self, sess, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
         self.sess = sess
@@ -29,13 +29,13 @@ class ActorNetwork(object):
         grads = list(zip(self.params_grad, self.weights))
         self.optimize = tf.train.AdamOptimizer(LEARNING_RATE).apply_gradients(grads)
         self.sess.run(tf.initialize_all_variables())
-
+    #Train Actor Network
     def train(self, states, action_grads):
         self.sess.run(self.optimize, feed_dict={
             self.state: states,
             self.action_gradient: action_grads
         })
-
+     #Train target actor network
     def target_train(self):
         actor_weights = self.model.get_weights()
         actor_target_weights = self.target_model.get_weights()
@@ -43,6 +43,7 @@ class ActorNetwork(object):
             actor_target_weights[i] = self.TAU * actor_weights[i] + (1 - self.TAU)* actor_target_weights[i]
         self.target_model.set_weights(actor_target_weights)
 
+    #return actor network model
     def create_actor_network(self, state_size,action_dim):
         print("Now we build the model")
         S = Input(shape=[state_size])   

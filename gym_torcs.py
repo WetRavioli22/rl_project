@@ -135,9 +135,11 @@ class TorcsEnv:
         rpm = np.array(obs['rpm'])
 
         progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos']) 
-        #reward = progress
-        reward_overtake = progress + 100*(10-obs['racePos'])
-        reward = reward_overtake
+        
+        # + 10* (sp - np.array(obs_pre['speedX']))
+        reward = progress
+        #reward_overtake = progress + 100*(5-obs['racePos'])
+        #reward = reward_overtake
 
         # collision detection
         if obs['damage'] - obs_pre['damage'] > 0:
@@ -151,12 +153,14 @@ class TorcsEnv:
         if obs['racePos'] - obs_pre['racePos'] < 0:
             reward = reward + 2000 
 
-        # Termination judgement #########################
-        episode_terminate = False
+        
+        
+        # Termination judgement
+        episode_terminate = True
         if (abs(track.any()) > 1 or abs(trackPos) > 1):  # Episode is terminated if the car is out of track
            reward = -1000
-           #episode_terminate = True
-           #client.R.d['meta'] = True
+           episode_terminate = True
+           client.R.d['meta'] = True
 
         if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
            if progress < self.termination_limit_progress:
