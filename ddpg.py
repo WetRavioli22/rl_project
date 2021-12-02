@@ -35,7 +35,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means Run without training
     vision = False
 
     EXPLORE = 100000.      #Epsilon is reduced by EXPLORE every time step
-    episode_count = 1000 
+    episode_count = 2000 
     max_steps = 100000     #Max steps in an episode
     reward = 0
     done = False           #Termination condition
@@ -165,7 +165,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means Run without training
         #Display rewards and save to csv
         print(("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward)))
         total_reward_history.append(total_reward)
-        pd.DataFrame(total_reward_history).to_csv("RewardHistoryImprovementOvertake4Cars.csv")
+        pd.DataFrame(total_reward_history).to_csv("RewardHistoryImprovementLaneKeep.csv")
         print(("Total Step: " + str(step)))
         print("")
 
